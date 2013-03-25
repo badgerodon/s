@@ -106,7 +106,6 @@ func (this *stringReader) Read(p []byte) (int, error) {
   var read int
   var tmp []byte
 
-
   for i := 0; i < len(p); i++ {
     tmp, err = this.reader.Peek(1)
     if len(tmp) > 0 {
@@ -114,7 +113,7 @@ func (this *stringReader) Read(p []byte) (int, error) {
       case '"':
         this.reader.Read(tmp)
         this.done = true
-        break
+        return read, io.EOF
       case '\\':
         this.reader.Read(tmp)
         tmp, err = this.reader.Peek(1)
