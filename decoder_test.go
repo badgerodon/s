@@ -8,15 +8,15 @@ import (
 
 type (
 	basicTest struct {
-		input string
-		typ reflect.Type
+		input  string
+		typ    reflect.Type
 		output interface{}
-		value interface{}
+		value  interface{}
 	}
 )
 
 var (
-	basicTests = []basicTest {
+	basicTests = []basicTest{
 		// positive numbers
 		{
 			`1`,

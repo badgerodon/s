@@ -31,11 +31,11 @@ func encodeString(dst io.Writer, s string) error {
 			}
 			switch b {
 			case '\\', '"':
-				dst.Write([]byte{'\\',b})
+				dst.Write([]byte{'\\', b})
 			case '\n':
-				dst.Write([]byte{'\\','n'})
+				dst.Write([]byte{'\\', 'n'})
 			case '\r':
-				dst.Write([]byte{'\\','r'})
+				dst.Write([]byte{'\\', 'r'})
 			default:
 				// This encodes bytes < 0x20 except for \n and \r,
 				// as well as < and >. The latter are escaped because they
@@ -88,19 +88,19 @@ func encodeValue(dst io.Writer, src reflect.Value) error {
 		}
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		_, err = io.WriteString(dst, strconv.FormatInt(src.Int(), 10))
-  case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		_, err = io.WriteString(dst, strconv.FormatUint(src.Uint(), 10))
-  case reflect.Float32, reflect.Float64:
-  	f := src.Float()
-  	if math.IsInf(f, 0) {
-  		err = fmt.Errorf("Infinity is not supported")
-  	} else if math.IsNaN(f) {
-  		err = fmt.Errorf("NaN is not supported")
-  	} else {
+	case reflect.Float32, reflect.Float64:
+		f := src.Float()
+		if math.IsInf(f, 0) {
+			err = fmt.Errorf("Infinity is not supported")
+		} else if math.IsNaN(f) {
+			err = fmt.Errorf("NaN is not supported")
+		} else {
 			_, err = io.WriteString(dst, strconv.FormatFloat(f, 'f', -1, 64))
-  	}
-  case reflect.String:
-  	err = encodeString(dst, src.String())
+		}
+	case reflect.String:
+		err = encodeString(dst, src.String())
 	case reflect.Struct:
 		_, err = dst.Write([]byte{'('})
 		if err != nil {
@@ -193,7 +193,7 @@ func encodeValue(dst io.Writer, src reflect.Value) error {
 	return err
 }
 
-func EncodeList(dst io.Writer, values ... interface{}) error {
+func EncodeList(dst io.Writer, values ...interface{}) error {
 	return encodeValue(dst, reflect.ValueOf(values))
 }
 
