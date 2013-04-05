@@ -5,15 +5,12 @@ import (
 	"testing"
 )
 
-type (
-	encodeTestCase struct {
-		src interface{}
-		val string
+func TestEncoder(t *testing.T) {
+	type testCase struct {
+		Value  interface{}
+		Result string
 	}
-)
-
-var (
-	encodeTestCases = []encodeTestCase{
+	testCases := []testCase{
 		{true, "#t"},
 		{false, "#f"},
 		{uint8(1), "1"},
@@ -31,18 +28,21 @@ var (
 		{struct{ x, y int }{25, 34}, "(25 34)"},
 		{new(int), "0"},
 	}
-)
-
-func TestEncoder(t *testing.T) {
-	for _, tc := range encodeTestCases {
+	for _, tc := range testCases {
 		var buf bytes.Buffer
-		err := Encode(&buf, tc.src)
+		exp, err := Encode(tc.Value)
 		if err != nil {
-			t.Errorf("Expected no error got: %v", err)
+			t.Errorf("Expected no error got %v for %v", err, tc.Value)
+			continue
+		}
+		err = exp.Write(&buf)
+		if err != nil {
+			t.Errorf("Expected no error got %v for %v", err, tc.Value)
+			continue
 		}
 		val := buf.String()
-		if val != tc.val {
-			t.Errorf("Expected `%v` got `%v`", tc.val, val)
+		if val != tc.Result {
+			t.Errorf("Expected `%v` got `%v` for %v", tc.Result, val, tc.Value)
 		}
 	}
 }

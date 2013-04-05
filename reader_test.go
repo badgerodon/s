@@ -20,81 +20,81 @@ var (
 		// positive numbers
 		{
 			`1`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(uint8),
 			uint8(1),
 		},
 		{
 			`99999999999`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(uint8),
 			uint8(255),
 		},
 		{
 			`99999999999`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(uint16),
 			uint16(65535),
 		},
 		{
 			`99999999999`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(uint32),
 			uint32(4294967295),
 		},
 		// negative numbers
 		{
 			`-1`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(uint8),
 			uint8(0),
 		},
 		{
 			`-1`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(int8),
 			int8(-1),
 		},
 		{
 			`-999999999999`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(int8),
 			int8(-128),
 		},
 		{
 			`-999999999999`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(int16),
 			int16(-32768),
 		},
 		{
 			`-999999999999`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(int32),
 			int32(-2147483648),
 		},
 		{
 			`-999999999999`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(int64),
 			int64(-999999999999),
 		},
 		// floating
 		{
 			`3.14`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(uint8),
 			uint8(3),
 		},
 		{
 			`3.14`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(float32),
 			float32(3.14),
 		},
 		{
 			`-3.14`,
-			reflect.TypeOf(Number{}),
+			reflect.TypeOf(Number("")),
 			new(float64),
 			float64(-3.14),
 		},
@@ -115,13 +115,13 @@ var (
 		// identifier
 		{
 			`abcd`,
-			reflect.TypeOf(Identifier{}),
+			reflect.TypeOf(Identifier("")),
 			new(string),
 			"abcd",
 		},
 		{
 			`!$%&*+-./:<=>?@^_~`,
-			reflect.TypeOf(Identifier{}),
+			reflect.TypeOf(Identifier("")),
 			new([]byte),
 			[]byte(`!$%&*+-./:<=>?@^_~`),
 		},
@@ -135,34 +135,34 @@ var (
 		// string
 		{
 			`"test\""`,
-			reflect.TypeOf(String{}),
+			reflect.TypeOf(String("")),
 			new(string),
 			`test"`,
 		},
 	}
 )
 
-func TestDecoder(t *testing.T) {
+func TestReader(t *testing.T) {
 	var buf bytes.Buffer
 	for _, test := range basicTests {
 		buf.WriteString(test.input)
-		node, err := Decode(&buf)
+		exp, err := Read(&buf)
 		if err != nil {
-			t.Errorf("Expected no error got: %v", err)
+			t.Errorf("Expected no error got %v for %v", err, test.input)
 			continue
 		}
-		if test.typ != reflect.TypeOf(node) {
-			t.Errorf("Expected %v got %T", test.typ, node)
+		if test.typ != reflect.TypeOf(exp) {
+			t.Errorf("Expected %v got %T for %v", test.typ, exp, test.input)
 		}
-		err = node.Scan(test.output)
+		err = exp.Scan(test.output)
 		if err != nil {
-			t.Errorf("Expected no error got: %v", err)
+			t.Errorf("Expected no error got %v for %v", err, test.input)
 			continue
 		}
 		o := reflect.ValueOf(test.output).Elem().Interface()
 
 		if !reflect.DeepEqual(o, test.value) {
-			t.Errorf("Expected %v to equal %v", o, test.value)
+			t.Errorf("Expected %v to equal %v for %v", o, test.value, test.input)
 			continue
 		}
 	}
