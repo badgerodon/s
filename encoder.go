@@ -17,6 +17,12 @@ func encodeValue(src reflect.Value) (exp Expression, err error) {
 	var ok bool
 
 	if src.CanInterface() {
+		exp, ok = src.Interface().(Expression)
+		if ok {
+			err = nil
+			return
+		}
+
 		err, ok = src.Interface().(error)
 		if ok {
 			exp = NewList(Identifier("error"), String(err.Error()))
@@ -62,9 +68,9 @@ func encodeValue(src reflect.Value) (exp Expression, err error) {
 	case reflect.String:
 		exp = String(src.String())
 	case reflect.Struct:
+		var e Expression
 		exps := make([]Expression, src.NumField())
 		for i := 0; i < src.NumField(); i++ {
-			var e Expression
 			e, err = encodeValue(src.Field(i))
 			if err != nil {
 				return
@@ -122,4 +128,15 @@ func encodeValue(src reflect.Value) (exp Expression, err error) {
 
 func Encode(src interface{}) (Expression, error) {
 	return encodeValue(reflect.ValueOf(src))
+}
+func EncodeList(src interface{}) (List, error) {
+	e, err := encodeValue(reflect.ValueOf(src))
+	if err != nil {
+		return nil, err
+	}
+	lst, ok := e.(List)
+	if !ok {
+		return nil, fmt.Errorf("Unable to convert %T into List")
+	}
+	return lst, nil
 }

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"unicode"
 )
 
 type (
@@ -32,10 +31,10 @@ func isWhitespace(ch rune) bool {
 	return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
 }
 func isDigit(ch rune) bool {
-	return '0' <= ch && ch <= '9' || ch >= 0x80 && unicode.IsDigit(ch)
+	return '0' <= ch && ch <= '9'
 }
 func isLetter(ch rune) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch >= 0x80 && unicode.IsLetter(ch)
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
 }
 func isExtended(ch rune) bool {
 	_, ok := extended[ch]
@@ -122,7 +121,40 @@ func (this Reader) readIdentifier(initial rune) (Identifier, error) {
 	return Identifier(buf.String()), err
 }
 func (this Reader) readList() (List, error) {
-	return []Expression{}, fmt.Errorf("Not Implemented")
+	var err error
+	var lst List
+	var exp Expression
+	var b byte
+	exps := []Expression{}
+
+	for {
+		// Skip opening whitespace
+		err = this.skipWhitespace()
+		if err != nil {
+			return lst, err
+		}
+
+		b, err = this.ReadByte()
+		if err != nil {
+			return lst, err
+		}
+		if b == ')' {
+			break
+		}
+		err = this.UnreadByte()
+		if err != nil {
+			return lst, err
+		}
+
+		exp, err = this.readExpression()
+		if err != nil {
+			return lst, err
+		}
+		exps = append(exps, exp)
+	}
+
+	lst = List(exps)
+	return lst, nil
 }
 func (this Reader) readBinary() (Binary, error) {
 	rdr := &readerTill{

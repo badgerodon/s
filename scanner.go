@@ -5,12 +5,55 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"reflect"
 )
 
-func (this List) Scan(dst interface{}) error {
-	return fmt.Errorf("Not Implemented")
+func (this List) Scan(dst ... interface{}) error {
+	// do nothing if the list is empty
+	if len(this) == 0 {
+		return nil
+	}
+
+	// one argument
+	if len(dst) == 1 {
+		val := reflect.ValueOf(dst[0])
+		// pointer to a struct
+		if val.Kind() == reflect.Ptr {
+			if e := val.Elem(); e.Kind() == reflect.Struct {
+				n := len(this)
+				if n > e.NumField() {
+					n = e.NumField()
+				}
+				for i := 0; i < n; i++ {
+					f := e.Field(i).Addr().Interface()
+					err := this[i].Scan(f)
+					if err != nil {
+						return err
+					}
+				}
+				return nil
+			}
+		}
+	}
+
+	n := len(this)
+	if n > len(dst) {
+		n = len(dst)
+	}
+	for i := 0; i < n; i++ {
+		err := this[i].Scan(dst[i])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
-func (this String) Scan(dst interface{}) error {
+func (this String) Scan(dsts ... interface{}) error {
+	if len(dsts) == 0 {
+		return fmt.Errorf("Expected at least one argument")
+	}
+	dst := dsts[0]
+
 	var err error
 	switch t := dst.(type) {
 	case *interface{}:
@@ -26,7 +69,12 @@ func (this String) Scan(dst interface{}) error {
 	}
 	return err
 }
-func (this Binary) Scan(dst interface{}) error {
+func (this Binary) Scan(dsts ... interface{}) error {
+	if len(dsts) == 0 {
+		return fmt.Errorf("Expected at least one argument")
+	}
+	dst := dsts[0]
+
 	var err error
 	switch t := dst.(type) {
 	case *interface{}:
@@ -40,7 +88,12 @@ func (this Binary) Scan(dst interface{}) error {
 	}
 	return err
 }
-func (this True) Scan(dst interface{}) error {
+func (this True) Scan(dsts ... interface{}) error {
+	if len(dsts) == 0 {
+		return fmt.Errorf("Expected at least one argument")
+	}
+	dst := dsts[0]
+
 	switch t := dst.(type) {
 	case *interface{}:
 		*t = true
@@ -51,7 +104,12 @@ func (this True) Scan(dst interface{}) error {
 	}
 	return nil
 }
-func (this False) Scan(dst interface{}) error {
+func (this False) Scan(dsts ... interface{}) error {
+	if len(dsts) == 0 {
+		return fmt.Errorf("Expected at least one argument")
+	}
+	dst := dsts[0]
+
 	switch t := dst.(type) {
 	case *interface{}:
 		*t = false
@@ -62,7 +120,12 @@ func (this False) Scan(dst interface{}) error {
 	}
 	return nil
 }
-func (this Number) Scan(dst interface{}) error {
+func (this Number) Scan(dsts ... interface{}) error {
+	if len(dsts) == 0 {
+		return fmt.Errorf("Expected at least one argument")
+	}
+	dst := dsts[0]
+
 	var vi int64
 	var vui uint64
 	var vf float64
@@ -141,6 +204,8 @@ func (this Number) Scan(dst interface{}) error {
 		}
 	case *int64:
 		*t = vi
+	case *int:
+		*t = int(vi)
 	case *float32:
 		*t = float32(vf)
 	case *float64:
@@ -150,7 +215,11 @@ func (this Number) Scan(dst interface{}) error {
 	}
 	return nil
 }
-func (this Identifier) Scan(dst interface{}) error {
+func (this Identifier) Scan(dsts ... interface{}) error {
+	if len(dsts) == 0 {
+		return fmt.Errorf("Expected at least one argument")
+	}
+	dst := dsts[0]
 	switch t := dst.(type) {
 	case *interface{}:
 		*t = string(this)
